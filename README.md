@@ -10,11 +10,13 @@ docker compose up
 
 ### Manual Method
 
-#### Pre-requisites
+#### Prerequisites
 
-- make
 - curl
+- go
 - golang-migrate
+- make
+- PostgreSQL
 
 #### Database Setup
 
