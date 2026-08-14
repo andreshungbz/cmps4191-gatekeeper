@@ -1,0 +1,2 @@
+export DB_DSN=postgres://gatekeeper_user:gatekeeper_password@postgres/gatekeeper?sslmode=disable
+export PORT=4000

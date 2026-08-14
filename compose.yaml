@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:18.4
+    container_name: gatekeeper_postgres
+    environment:
+      POSTGRES_USER: gatekeeper_user
+      POSTGRES_PASSWORD: gatekeeper_password
+      POSTGRES_DB: gatekeeper
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U gatekeeper_user -d gatekeeper']
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gatekeeper_network
+
+  app:
+    build: .
+    container_name: cmps4191_gatekeeper
+    ports:
+      - '4000:4000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: gatekeeper_user
+      DB_PASSWORD: gatekeeper_password
+      DB_NAME: gatekeeper
+    networks:
+      - gatekeeper_network
+
+networks:
+  gatekeeper_network:
+    name: gatekeeper_network
+    driver: bridge
