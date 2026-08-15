@@ -22,6 +22,24 @@ func (app *application) routes() http.Handler {
 
 	// DATABASE SCHEMA ROUTES
 
+	// consumer routes
+	router.HandlerFunc(http.MethodPost, "/v1/consumers", app.createConsumerHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/consumers/:id", app.showConsumerHandler)
+	router.HandlerFunc(http.MethodPut, "/v1/consumers/:id", app.updateConsumerHandler)
+	router.HandlerFunc(http.MethodDelete, "/v1/consumers/:id", app.deleteConsumerHandler)
+
+	// API key routes
+	router.HandlerFunc(http.MethodPost, "/v1/api-keys", app.createAPIKeyHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/api-keys/:id", app.showAPIKeyHandler)
+	router.HandlerFunc(http.MethodPut, "/v1/api-keys/:id", app.updateAPIKeyHandler)
+	router.HandlerFunc(http.MethodDelete, "/v1/api-keys/:id", app.deleteAPIKeyHandler)
+
+	// job routes
+	router.HandlerFunc(http.MethodPost, "/v1/jobs", app.createJobHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/jobs/:id", app.showJobHandler)
+	router.HandlerFunc(http.MethodPut, "/v1/jobs/:id", app.updateJobHandler)
+	router.HandlerFunc(http.MethodDelete, "/v1/jobs/:id", app.deleteJobHandler)
+
 	// GLOBAL MIDDLEWARE
 
 	return app.requestLogger(
