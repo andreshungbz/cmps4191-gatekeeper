@@ -55,16 +55,16 @@ type ConsumerModel struct {
 // Insert creates a consumer record.
 func (m ConsumerModel) Insert(c *Consumer) error {
 	query := `
-		INSERT INTO consumers (name, email, status)
-		VALUES ($1, $2, $3)
-		RETURNING id`
+		INSERT INTO consumers (name, email)
+		VALUES ($1, $2)
+		RETURNING id, status, version, created_at, updated_at`
 
-	args := []any{c.Name, c.Email, c.Status}
+	args := []any{c.Name, c.Email}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return m.DB.QueryRowContext(ctx, query, args...).Scan(&c.ID)
+	return m.DB.QueryRowContext(ctx, query, args...).Scan(&c.ID, &c.Status, &c.Version, &c.CreatedAt, &c.UpdatedAt)
 }
 
 // GetByID retrieves a single consumer record by its ID.
@@ -96,23 +96,22 @@ func (m ConsumerModel) Update(c *Consumer) error {
 	query := `
 		UPDATE consumers
 		SET name = $1, email = $2, status = $3, version = version + 1
-		WHERE id = $4`
+		WHERE id = $4
+		RETURNING version, updated_at`
 
 	args := []any{c.Name, c.Email, c.Status, c.ID}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	result, err := m.DB.ExecContext(ctx, query, args...)
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&c.Version, &c.UpdatedAt)
 	if err != nil {
-		return err
-	}
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected == 0 {
-		return ErrRecordNotFound
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrRecordNotFound
+		default:
+			return err
+		}
 	}
 
 	return nil

@@ -11,9 +11,8 @@ import (
 // createConsumerHandler reads JSON input to create a consumer record, then returns JSON of the created record.
 func (app *application) createConsumerHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name   string `json:"name"`
-		Email  string `json:"email"`
-		Status string `json:"status"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -23,13 +22,14 @@ func (app *application) createConsumerHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	consumer := &data.Consumer{
-		Name:   input.Name,
-		Email:  input.Email,
-		Status: data.ConsumerStatus(input.Status),
+		Name:  input.Name,
+		Email: input.Email,
 	}
 
 	v := validator.New()
-	if data.ValidateConsumer(v, consumer); !v.Valid() {
+	v.Check(consumer.Name != "", "name", "must be provided")
+	data.ValidateContactEmail(v, consumer.Email)
+	if !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
