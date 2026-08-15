@@ -7,6 +7,8 @@ DROP TYPE IF EXISTS key_status;
 
 DROP TYPE IF EXISTS consumer_status;
 
+DROP EXTENSION IF EXISTS pgcrypto;
+
 DROP EXTENSION IF EXISTS citext;
 
 COMMIT;

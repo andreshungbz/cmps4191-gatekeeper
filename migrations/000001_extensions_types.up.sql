@@ -3,6 +3,8 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS citext;
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TYPE consumer_status AS ENUM('active', 'suspended', 'terminated');
 
 CREATE TYPE key_status AS ENUM('active', 'rotating', 'revoked');
