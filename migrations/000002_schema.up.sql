@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS
     jobs (
         id UUID PRIMARY KEY DEFAULT uuidv7 (),
         public_id UUID NOT NULL DEFAULT uuidv4 (),
-        consumer_id UUID NOT NULL REFERENCES consumers (id),
+        consumer_id UUID NOT NULL REFERENCES consumers (id) ON DELETE CASCADE,
         job_type TEXT NOT NULL,
         status job_status NOT NULL DEFAULT 'queued',
         payload JSONB NOT NULL DEFAULT '{}',
