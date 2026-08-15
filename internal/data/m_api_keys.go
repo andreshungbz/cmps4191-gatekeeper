@@ -54,22 +54,21 @@ type APIKeyModel struct {
 // Insert creates an API key record.
 func (m APIKeyModel) Insert(key *APIKey) error {
 	query := `
-		INSERT INTO api_keys (consumer_id, key_hash, key_prefix, status, expires_at)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, created_at`
+		INSERT INTO api_keys (consumer_id, key_hash, key_prefix, expires_at)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, status, created_at`
 
 	args := []any{
 		key.ConsumerID,
 		key.KeyHash,
 		key.KeyPrefix,
-		key.Status,
 		key.ExpiresAt,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return m.DB.QueryRowContext(ctx, query, args...).Scan(&key.ID, &key.CreatedAt)
+	return m.DB.QueryRowContext(ctx, query, args...).Scan(&key.ID, &key.Status, &key.CreatedAt)
 }
 
 // GetByID retrieves a single API key record by its ID.
@@ -142,10 +141,10 @@ func (m APIKeyModel) GetByHash(keyHash string) (*APIKey, error) {
 func (m APIKeyModel) Update(key *APIKey) error {
 	query := `
 		UPDATE api_keys
-		SET status = $1, last_used_at = $2, expires_at = $3
-		WHERE id = $4`
+		SET status = $1
+		WHERE id = $2`
 
-	args := []any{key.Status, key.LastUsedAt, key.ExpiresAt, key.ID}
+	args := []any{key.Status, key.ID}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

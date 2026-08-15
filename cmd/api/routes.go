@@ -36,8 +36,8 @@ func (app *application) routes() http.Handler {
 
 	// job routes
 	router.HandlerFunc(http.MethodPost, "/v1/jobs", app.createJobHandler)
-	router.HandlerFunc(http.MethodGet, "/v1/jobs/:id", app.showJobHandler)
-	router.HandlerFunc(http.MethodPut, "/v1/jobs/:id", app.updateJobHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/jobs/:public_id", app.showJobHandler)
+	router.HandlerFunc(http.MethodPut, "/v1/jobs/:public_id", app.updateJobHandler)
 	router.HandlerFunc(http.MethodDelete, "/v1/jobs/:id", app.deleteJobHandler)
 
 	// GLOBAL MIDDLEWARE

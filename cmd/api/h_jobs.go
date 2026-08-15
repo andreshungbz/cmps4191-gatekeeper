@@ -48,13 +48,13 @@ func (app *application) createJobHandler(w http.ResponseWriter, r *http.Request)
 
 // showJobHandler reads the UUID in the URL path, then returns JSON of the matching job record.
 func (app *application) showJobHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readUUIDParam("id", r)
+	id, err := app.readUUIDParam("public_id", r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 
-	job, err := app.models.Job.GetByID(id)
+	job, err := app.models.Job.GetByPublicID(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -70,13 +70,13 @@ func (app *application) showJobHandler(w http.ResponseWriter, r *http.Request) {
 
 // updateJobHandler updates the job record matching UUID in the URL path, then returns JSON of the updated record.
 func (app *application) updateJobHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readUUIDParam("id", r)
+	id, err := app.readUUIDParam("public_id", r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 
-	job, err := app.models.Job.GetByID(id)
+	job, err := app.models.Job.GetByPublicID(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -88,11 +88,11 @@ func (app *application) updateJobHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	var input struct {
-		Status       *string         `json:"status"`
-		Result       json.RawMessage `json:"result"`
-		ErrorMessage *string         `json:"error_message"`
-		StartedAt    *time.Time      `json:"started_at"`
-		CompletedAt  *time.Time      `json:"completed_at"`
+		Status       *string          `json:"status"`
+		Result       *json.RawMessage `json:"result"`
+		ErrorMessage *string          `json:"error_message"`
+		StartedAt    *time.Time       `json:"started_at"`
+		CompletedAt  *time.Time       `json:"completed_at"`
 	}
 
 	err = app.readJSON(w, r, &input)

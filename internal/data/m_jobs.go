@@ -24,24 +24,32 @@ const (
 
 // Job maps the jobs entity.
 type Job struct {
-	ID           uuid.UUID       `json:"id"`
-	PublicID     uuid.UUID       `json:"public_id"`
-	ConsumerID   uuid.UUID       `json:"consumer_id"`
-	JobType      string          `json:"job_type"`
-	Status       JobStatus       `json:"status"`
-	Payload      json.RawMessage `json:"payload"`
-	Result       json.RawMessage `json:"result,omitempty"`
-	ErrorMessage *string         `json:"error_message,omitempty"`
-	StartedAt    *time.Time      `json:"started_at,omitempty"`
-	CompletedAt  *time.Time      `json:"completed_at,omitempty"`
-	CreatedAt    time.Time       `json:"created_at"`
-	UpdatedAt    time.Time       `json:"updated_at"`
+	ID           uuid.UUID        `json:"id"`
+	PublicID     uuid.UUID        `json:"public_id"`
+	ConsumerID   uuid.UUID        `json:"consumer_id"`
+	JobType      string           `json:"job_type"`
+	Status       JobStatus        `json:"status"`
+	Payload      json.RawMessage  `json:"payload"`
+	Result       *json.RawMessage `json:"result,omitempty"`
+	ErrorMessage *string          `json:"error_message,omitempty"`
+	StartedAt    *time.Time       `json:"started_at,omitempty"`
+	CompletedAt  *time.Time       `json:"completed_at,omitempty"`
+	CreatedAt    time.Time        `json:"created_at"`
+	UpdatedAt    time.Time        `json:"updated_at"`
 }
 
 // ValidateJob performs validation checks for a job record.
 func ValidateJob(v *validator.Validator, j *Job) {
 	v.Check(j.ConsumerID != uuid.Nil, "consumer_id", "must be provided")
 	v.Check(j.JobType != "", "job_type", "must be provided")
+	v.Check(j.Payload != nil && json.Valid(j.Payload), "payload", "must be a valid JSON object")
+	if j.Result != nil {
+		v.Check(json.Valid(*j.Result), "result", "must be a valid JSON object")
+	}
+}
+
+// ValidateJobStatus performs validation checks for a job status.
+func ValidateJobStatus(v *validator.Validator, j *Job) {
 	v.Check(j.Status == JobStatusQueued ||
 		j.Status == JobStatusProcessing ||
 		j.Status == JobStatusCompleted ||
@@ -49,10 +57,6 @@ func ValidateJob(v *validator.Validator, j *Job) {
 		j.Status == JobStatusCancelled,
 		"status", "must be a valid status",
 	)
-	v.Check(j.Payload != nil && json.Valid(j.Payload), "payload", "must be a valid JSON object")
-	if j.Result != nil {
-		v.Check(json.Valid(j.Result), "result", "must be a valid JSON object")
-	}
 }
 
 // JobModel holds the database handler.
@@ -65,7 +69,7 @@ func (m JobModel) Insert(j *Job) error {
 	query := `
 		INSERT INTO jobs (consumer_id, job_type, payload)
 		VALUES ($1, $2, $3)
-		RETURNING id, public_id, created_at, updated_at`
+		RETURNING id, public_id, status, result, error_message, started_at, completed_at, created_at, updated_at`
 
 	// fallback to empty JSON object if payload is empty
 	payload := j.Payload
@@ -78,7 +82,7 @@ func (m JobModel) Insert(j *Job) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	return m.DB.QueryRowContext(ctx, query, args...).Scan(&j.ID, &j.PublicID, &j.Status, &j.CreatedAt, &j.UpdatedAt)
+	return m.DB.QueryRowContext(ctx, query, args...).Scan(&j.ID, &j.PublicID, &j.Status, &j.Result, &j.ErrorMessage, &j.StartedAt, &j.CompletedAt, &j.CreatedAt, &j.UpdatedAt)
 }
 
 // GetByID retrieves a single job record by its internal UUID.

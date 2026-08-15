@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"net/http"
 	"time"
@@ -14,9 +17,6 @@ import (
 func (app *application) createAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		ConsumerID uuid.UUID  `json:"consumer_id"`
-		KeyHash    string     `json:"key_hash"`
-		KeyPrefix  string     `json:"key_prefix"`
-		Status     string     `json:"status"`
 		ExpiresAt  *time.Time `json:"expires_at"`
 	}
 
@@ -26,11 +26,22 @@ func (app *application) createAPIKeyHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	randomBytes := make([]byte, 16)
+	if _, err := rand.Read(randomBytes); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	prefix := "gk_"
+	plainKey := prefix + hex.EncodeToString(randomBytes)
+	hash := sha256.Sum256([]byte(plainKey))
+	keyHash := hex.EncodeToString(hash[:])
+
 	apiKey := &data.APIKey{
 		ConsumerID: input.ConsumerID,
-		KeyHash:    input.KeyHash,
-		KeyPrefix:  input.KeyPrefix,
-		Status:     data.KeyStatus(input.Status),
+		KeyHash:    keyHash,
+		KeyPrefix:  prefix,
+		Status:     data.KeyStatusActive,
 		ExpiresAt:  input.ExpiresAt,
 	}
 
@@ -46,7 +57,7 @@ func (app *application) createAPIKeyHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	app.writeJSON(w, http.StatusCreated, envelope{"api_key": apiKey}, nil)
+	app.writeJSON(w, http.StatusCreated, envelope{"api_key": plainKey, "api_key_info": apiKey}, nil)
 }
 
 // showAPIKeyHandler reads the UUID in the URL path, then returns JSON of the matching API key record.
@@ -68,7 +79,7 @@ func (app *application) showAPIKeyHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	app.writeJSON(w, http.StatusOK, envelope{"api_key": apiKey}, nil)
+	app.writeJSON(w, http.StatusOK, envelope{"api_key_info": apiKey}, nil)
 }
 
 // updateAPIKeyHandler updates the API key record matching UUID in the URL path, then returns JSON of the updated record.
@@ -91,9 +102,7 @@ func (app *application) updateAPIKeyHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	var input struct {
-		Status     *string    `json:"status"`
-		LastUsedAt *time.Time `json:"last_used_at"`
-		ExpiresAt  *time.Time `json:"expires_at"`
+		Status *string `json:"status"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -104,12 +113,6 @@ func (app *application) updateAPIKeyHandler(w http.ResponseWriter, r *http.Reque
 
 	if input.Status != nil {
 		apiKey.Status = data.KeyStatus(*input.Status)
-	}
-	if input.LastUsedAt != nil {
-		apiKey.LastUsedAt = input.LastUsedAt
-	}
-	if input.ExpiresAt != nil {
-		apiKey.ExpiresAt = input.ExpiresAt
 	}
 
 	v := validator.New()
@@ -124,7 +127,7 @@ func (app *application) updateAPIKeyHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	app.writeJSON(w, http.StatusOK, envelope{"api_key": apiKey}, nil)
+	app.writeJSON(w, http.StatusOK, envelope{"api_key_info": apiKey}, nil)
 }
 
 // deleteAPIKeyHandler deletes the API key record matching UUID in the URL path.
