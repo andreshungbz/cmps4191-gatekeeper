@@ -1,0 +1,10 @@
+name: Testing
+values:
+  - key: SERVER_ADDRESS
+    value: 'http://localhost'
+  - key: SERVER_PORT
+    value: '4000'
+  - key: API_VERSION
+    value: v1
+  - key: TEST_CONSUMER_UUID_1
+    value: 018f3a00-0000-7000-8000-000000000001
