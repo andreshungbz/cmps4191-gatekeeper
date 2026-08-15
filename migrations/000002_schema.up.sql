@@ -7,9 +7,9 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS
     consumers (
         id UUID PRIMARY KEY DEFAULT uuidv7 (),
-        NAME TEXT NOT NULL,
+        name TEXT NOT NULL,
         email CITEXT NOT NULL UNIQUE,
-        STATUS consumer_status NOT NULL DEFAULT 'active',
+        status consumer_status NOT NULL DEFAULT 'active',
         version INTEGER NOT NULL DEFAULT 1,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
