@@ -12,9 +12,16 @@ var (
 
 // Models groups all database models used in the application.
 type Models struct {
+	Consumer ConsumerModel
+	APIKey   APIKeyModel
+	Job      JobModel
 }
 
 // NewModels returns all Models configured with the database handler.
 func NewModels(db *sql.DB) Models {
-	return Models{}
+	return Models{
+		Consumer: ConsumerModel{DB: db},
+		APIKey:   APIKeyModel{DB: db},
+		Job:      JobModel{DB: db},
+	}
 }
