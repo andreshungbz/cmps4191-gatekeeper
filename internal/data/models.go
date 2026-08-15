@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	ErrRecordNotFound = errors.New("record not found")
-	ErrEditConflict   = errors.New("edit conflict")
+	ErrRecordNotFound = errors.New("Record not found")
+	ErrEditConflict   = errors.New("Edit conflict")
 )
 
 // Models groups all database models used in the application.
