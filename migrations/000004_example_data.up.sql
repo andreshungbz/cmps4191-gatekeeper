@@ -47,10 +47,10 @@ VALUES
         '018f3a00-0000-7000-8000-000000000101',
         '018f3a00-0000-7000-8000-000000000001',
         encode(
-            digest ('gk_live_a1b2c3d4e5f6g7h8i9j0', 'sha256'),
+            digest ('gk_a1b2c3d4e5f6g7h8i9j0', 'sha256'),
             'hex'
         ),
-        'gk_live_a1b2',
+        'gk_a1b2',
         'active',
         NOW() - INTERVAL '10 minutes',
         NOW() + INTERVAL '1 year'
@@ -59,10 +59,10 @@ VALUES
         '018f3a00-0000-7000-8000-000000000102',
         '018f3a00-0000-7000-8000-000000000001',
         encode(
-            digest ('gk_test_x9y8z7w6v5u4t3s2r1q0', 'sha256'),
+            digest ('gk_x9y8z7w6v5u4t3s2r1q0', 'sha256'),
             'hex'
         ),
-        'gk_test_x9y8',
+        'gk_x9y8',
         'active',
         NULL,
         NOW() + INTERVAL '30 days'
@@ -71,10 +71,10 @@ VALUES
         '018f3a00-0000-7000-8000-000000000103',
         '018f3a00-0000-7000-8000-000000000002',
         encode(
-            digest ('gk_live_m1n2o3p4q5r6s7t8u9v0', 'sha256'),
+            digest ('gk_m1n2o3p4q5r6s7t8u9v0', 'sha256'),
             'hex'
         ),
-        'gk_live_m1n2',
+        'gk_m1n2',
         'active',
         NOW() - INTERVAL '1 hour',
         NULL
