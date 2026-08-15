@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 
-	"github.com/andreshungbz/cmps4191-gatekeeper/internal/validator"
+	"github.com/google/uuid"
+	"github.com/julienschmidt/httprouter"
 )
 
 // envelope is used to enclose a JSON response.
@@ -105,22 +104,17 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 	return nil
 }
 
-// readInt returns the integer value of a specified URL key. It validates the conversion
-// from string to integer.
-func (app *application) readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
-	s := qs.Get(key)
+// readUUIDParam extracts a UUID path parameter from the request context and parses it.
+func (app *application) readUUIDParam(paramName string, r *http.Request) (uuid.UUID, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+	paramStr := params.ByName(paramName)
 
-	if s == "" {
-		return defaultValue
-	}
-
-	i, err := strconv.Atoi(s)
+	id, err := uuid.Parse(paramStr)
 	if err != nil {
-		v.AddError(key, "Must be an integer value")
-		return defaultValue
+		return uuid.Nil, errors.New("invalid uuid parameter")
 	}
 
-	return i
+	return id, nil
 }
 
 // background launches a function as a goroutine and handles panics for it.
